@@ -63,9 +63,12 @@ export type Source = {
   logo_url: string | null;
 };
 
+export type ArticleCategory = "chile" | "argentina" | "global";
+
 export type Article = {
   id: string;
   source_id: string | null;
+  category: ArticleCategory | null;
   title: string;
   summary: string | null;
   url: string | null;
