@@ -132,5 +132,7 @@ export type Profile = {
   predictor_points: number;
   referral_code?: string | null;
   referred_by?: string | null;
+  phone?: string | null;
+  avatar_url?: string | null;
   is_admin?: boolean | null;
 };

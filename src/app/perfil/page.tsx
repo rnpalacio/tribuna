@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -20,6 +20,14 @@ export default function Perfil() {
   const [points, setPoints] = useState<{ predictor: number; xv: number }>({ predictor: 0, xv: 0 });
   const [prefs, setPrefs] = useState<Prefs>({ personalize: true, analytics: true, sponsors: false });
   const [refCode, setRefCode] = useState<string | null>(null);
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveMsg, setSaveMsg] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
   const [refCount, setRefCount] = useState(0);
   const [copied, setCopied] = useState(false);
 
@@ -34,8 +42,11 @@ export default function Perfil() {
         const p = prof as Profile | null;
         if (p) {
           setName(p.display_name || "Hincha");
+          setPhone(p.phone || "");
+          setAvatarUrl(p.avatar_url || null);
           setPrefs({ personalize: p.personalize_feed, analytics: p.analytics_opt_in, sponsors: p.sponsors_opt_in });
         }
+        setEmail(user.email || "");
         const { data: xvAll } = await supabase.rpc("xv_leaderboard");
         const mine = ((xvAll as { user_id: string; xv_points: number }[]) || []).find((r) => r.user_id === user.id);
         setPoints({ predictor: p?.predictor_points ?? 0, xv: mine?.xv_points ?? 0 });
@@ -86,6 +97,44 @@ export default function Perfil() {
     try { await navigator.clipboard.writeText(shareUrl); setCopied(true); setTimeout(() => setCopied(false), 1800); } catch {}
   }
 
+  async function saveProfile() {
+    setSaving(true);
+    setSaveMsg(null);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const msgs: string[] = [];
+    const { error: e1 } = await supabase.from("profiles")
+      .update({ display_name: name.trim() || "Hincha", phone: phone.trim() || null })
+      .eq("id", user.id);
+    if (e1) msgs.push("No pudimos guardar nombre/celular.");
+    if (email.trim() && email.trim().toLowerCase() !== (user.email || "").toLowerCase()) {
+      const { error: e2 } = await supabase.auth.updateUser({ email: email.trim() });
+      msgs.push(e2 ? "No pudimos actualizar el email." : "Te enviamos un email para confirmar el cambio de dirección.");
+    }
+    setSaving(false);
+    setSaveMsg(msgs.length ? msgs.join(" ") : "Datos guardados ✓");
+    if (!msgs.some((m) => m.startsWith("No pudimos"))) setEditing(false);
+  }
+
+  async function uploadAvatar(file: File) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user || !file) return;
+    setUploading(true);
+    const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+    const path = `${user.id}/avatar.${ext}`;
+    const { error } = await supabase.storage.from("avatars")
+      .upload(path, file, { upsert: true, contentType: file.type || "image/jpeg" });
+    if (!error) {
+      const { data: pub } = supabase.storage.from("avatars").getPublicUrl(path);
+      const url = `${pub.publicUrl}?v=${Date.now()}`;
+      await supabase.from("profiles").update({ avatar_url: url }).eq("id", user.id);
+      setAvatarUrl(url);
+    } else {
+      setSaveMsg("No pudimos subir la imagen.");
+    }
+    setUploading(false);
+  }
+
   async function logout() {
     await supabase.auth.signOut();
     router.push("/");
@@ -99,13 +148,62 @@ export default function Perfil() {
           {!authed && <Link href="/login" className="text-brand font-semibold text-sm">Iniciar sesión</Link>}
         </div>
 
-        <div className="flex items-center gap-3 mb-6">
-          <Badge label={name.slice(0, 1).toUpperCase()} size={56} />
-          <div>
-            <p className="font-bold text-lg">{name}</p>
+        <div className="flex items-center gap-4 mb-4">
+          <div className="relative shrink-0">
+            {avatarUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={avatarUrl} alt="Foto de perfil" className="w-16 h-16 rounded-full object-cover border border-white/10" />
+            ) : (
+              <Badge label={name.slice(0, 1).toUpperCase()} size={64} />
+            )}
+            {authed && (
+              <button
+                onClick={() => fileRef.current?.click()}
+                className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-brand grid place-items-center border-2 border-ink"
+                aria-label="Cambiar foto de perfil"
+              >
+                {uploading ? (
+                  <span className="w-3 h-3 rounded-full border-2 border-white/40 border-t-white animate-spin" />
+                ) : (
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                )}
+              </button>
+            )}
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadAvatar(f); e.target.value = ""; }}
+            />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-bold text-lg truncate">{name}</p>
             <p className="text-sm text-white/55">{authed ? "Cuenta verificada" : "Modo invitado"}</p>
           </div>
+          {authed && (
+            <button onClick={() => { setEditing(!editing); setSaveMsg(null); }} className="text-brand text-sm font-semibold shrink-0">
+              {editing ? "Cancelar" : "Editar"}
+            </button>
+          )}
         </div>
+
+        {authed && editing && (
+          <div className="bg-card border border-white/5 rounded-2xl p-4 mb-6 space-y-3">
+            <Field label="Nombre" value={name} onChange={setName} placeholder="Tu nombre" />
+            <Field label="Email" value={email} onChange={setEmail} placeholder="tu@email.com" type="email" />
+            <Field label="Celular" value={phone} onChange={setPhone} placeholder="+56 9 1234 5678" type="tel" />
+            <button
+              onClick={saveProfile}
+              disabled={saving}
+              className="w-full bg-brand hover:bg-brand-600 transition text-white rounded-xl py-3 font-bold disabled:opacity-60"
+            >
+              {saving ? "Guardando…" : "GUARDAR"}
+            </button>
+            <p className="text-[11px] text-white/45">Si cambiás el email, te llega un enlace de confirmación a la casilla nueva.</p>
+          </div>
+        )}
+        {saveMsg && <p className="text-sm text-brand mb-4">{saveMsg}</p>}
 
         {authed && (
           <>
@@ -183,6 +281,23 @@ function PointBox({ label, value, highlight = false }: { label: string; value: n
       <p className={`display text-3xl ${highlight ? "" : "text-brand"}`}>{value.toLocaleString("es-CL")}</p>
       <p className={`text-[11px] mt-1 ${highlight ? "text-white/60" : "text-white/55"}`}>{label}</p>
     </div>
+  );
+}
+
+function Field({ label, value, onChange, placeholder, type = "text" }: {
+  label: string; value: string; onChange: (v: string) => void; placeholder?: string; type?: string;
+}) {
+  return (
+    <label className="block">
+      <span className="text-[11px] tracking-wide text-white/55 font-semibold uppercase">{label}</span>
+      <input
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="mt-1 w-full bg-ink border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-white/30 focus:border-brand outline-none"
+      />
+    </label>
   );
 }
 
