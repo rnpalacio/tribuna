@@ -5,9 +5,8 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Badge } from "@/components/Badge";
 import { BottomNav } from "@/components/BottomNav";
-import { PollCard } from "@/components/PollCard";
 import { NotificationBell } from "@/components/NotificationBell";
-import type { Team, Match, Article, Poll, ArticleCategory } from "@/lib/types";
+import type { Team, Match, Article, ArticleCategory } from "@/lib/types";
 import { isLiveNow, streamingFor } from "@/lib/live";
 import { withRound } from "@/lib/format";
 
@@ -49,7 +48,6 @@ export default function Feed() {
     global: [],
   });
   const [filter, setFilter] = useState<Filter>("todo");
-  const [poll, setPoll] = useState<Poll | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -111,14 +109,6 @@ export default function Feed() {
         grouped[cat] = (results[i].data as Article[]) || [];
       });
       setByCategory(grouped);
-
-      const { data: p } = await supabase
-        .from("polls")
-        .select("*, poll_options(*)")
-        .eq("active", true)
-        .eq("kind", "prediction")
-        .limit(1);
-      setPoll((p?.[0] as Poll) || null);
 
       setLoading(false);
     })();
@@ -182,9 +172,6 @@ export default function Feed() {
 
         {/* match result */}
         {match && <MatchResult match={match} />}
-
-        {/* poll */}
-        {poll && <div className="mt-4"><PollCard poll={poll} /></div>}
 
         {/* category filters */}
         <div className="flex gap-2 mt-5 overflow-x-auto no-scrollbar">

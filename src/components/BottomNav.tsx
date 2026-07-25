@@ -3,10 +3,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+const ACTIVE = "#FF5A1F";
+const INACTIVE = "#A1A1A1";
+
 const items = [
   { href: "/feed", label: "Hoy", icon: HomeIcon },
   { href: "/partidos", label: "Partidos", icon: ShieldIcon },
-  { href: "/equipos", label: "Equipos", icon: TeamsIcon },
+  { href: "/prediccion", label: "Predicción", icon: TargetIcon },
   { href: "/comunidad", label: "Comunidad", icon: StarIcon },
   { href: "/perfil", label: "Perfil", icon: UserIcon },
 ];
@@ -14,7 +17,7 @@ const items = [
 export function BottomNav() {
   const pathname = usePathname();
   return (
-    <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] bg-cream border-t border-white/10 z-20">
+    <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] bg-ink/95 backdrop-blur border-t border-white/10 z-20">
       <div className="grid grid-cols-5 px-1 pt-2 pb-[max(env(safe-area-inset-bottom),12px)]">
         {items.map((it) => {
           const active = pathname.startsWith(it.href);
@@ -27,7 +30,7 @@ export function BottomNav() {
             >
               <Icon active={active} />
               <span
-                className={`text-[11px] ${active ? "text-brand font-semibold" : "text-white/55"}`}
+                className={`text-[11px] ${active ? "text-brand font-semibold" : "text-muted"}`}
               >
                 {it.label}
               </span>
@@ -39,37 +42,37 @@ export function BottomNav() {
   );
 }
 
-function TeamsIcon({ active }: { active: boolean }) {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active ? "#2563EB" : "#64748B"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="9" cy="8" r="3" /><path d="M3 20c0-3 3-5 6-5s6 2 6 5" /><circle cx="17" cy="9" r="2.2" /><path d="M16 14c3 0 5 2 5 5" />
-    </svg>
-  );
-}
 function HomeIcon({ active }: { active: boolean }) {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active ? "#2563EB" : "#64748B"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active ? ACTIVE : INACTIVE} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M3 10.5 12 3l9 7.5" /><path d="M5 9.5V21h14V9.5" />
     </svg>
   );
 }
 function ShieldIcon({ active }: { active: boolean }) {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active ? "#2563EB" : "#64748B"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active ? ACTIVE : INACTIVE} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M12 3l7 3v5c0 5-3.5 8-7 10-3.5-2-7-5-7-10V6l7-3z" />
+    </svg>
+  );
+}
+function TargetIcon({ active }: { active: boolean }) {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active ? ACTIVE : INACTIVE} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="4.5" /><circle cx="12" cy="12" r="0.8" fill={active ? ACTIVE : INACTIVE} />
     </svg>
   );
 }
 function StarIcon({ active }: { active: boolean }) {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active ? "#2563EB" : "#64748B"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active ? ACTIVE : INACTIVE} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M12 3l2.7 5.5 6 .9-4.3 4.2 1 6-5.4-2.8-5.4 2.8 1-6L3.3 9.4l6-.9L12 3z" />
     </svg>
   );
 }
 function UserIcon({ active }: { active: boolean }) {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active ? "#2563EB" : "#64748B"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active ? ACTIVE : INACTIVE} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="12" cy="8" r="4" /><path d="M4 21c0-4 4-6 8-6s8 2 8 6" />
     </svg>
   );

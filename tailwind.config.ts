@@ -6,17 +6,19 @@ const config: Config = {
     extend: {
       colors: {
         brand: {
-          DEFAULT: "#2563EB",
-          600: "#1D4ED8",
+          DEFAULT: "#FF5A1F",
+          400: "#FF7A33",
+          600: "#E04A12",
         },
-        ink: "#070A12",
-        cream: "#0A0E16",
-        card: "#121826",
-        surface2: "#1B2335",
+        ink: "#111111",
+        cream: "#111111",
+        card: "#1A1A1A",
+        surface2: "#242424",
+        muted: "#A1A1A1",
       },
       fontFamily: {
         sans: ["var(--font-sans)", "system-ui", "sans-serif"],
-        display: ["var(--font-display)", "Georgia", "serif"],
+        display: ["var(--font-display)", "system-ui", "sans-serif"],
       },
     },
   },

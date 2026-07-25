@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 :root {
-  --font-sans: "Inter", system-ui, sans-serif;
-  --font-display: "Inter", system-ui, sans-serif;
+  --font-sans: var(--font-grotesk), "Space Grotesk", system-ui, sans-serif;
+  --font-display: var(--font-grotesk), "Space Grotesk", system-ui, sans-serif;
 }
 
 html,
@@ -13,8 +13,9 @@ body {
 }
 
 body {
-  background: #0A0E16;
+  background: #111111;
   color: #fff;
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -27,7 +28,8 @@ body {
 }
 
 .display {
-  font-weight: 800;
+  font-family: var(--font-display);
+  font-weight: 700;
   letter-spacing: -0.02em;
 }
 
