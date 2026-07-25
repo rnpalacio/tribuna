@@ -83,11 +83,14 @@ export default function Partidos() {
     .slice(0, PAST_LIMIT);
 
   // Próximos: hasta ~2 meses hacia adelante para no alargar el scroll.
+  // Si no hay nada en esa ventana, mostramos igual los siguientes 10.
   const horizon = Date.now() + UPCOMING_WINDOW_DAYS * 24 * 60 * 60 * 1000;
   const upcomingAll = fMatches.filter((m) => m.status !== "final" && !liveIds.has(m.id));
-  const upcoming = upcomingAll.filter(
+  let upcoming = upcomingAll.filter(
     (m) => !m.kickoff_at || new Date(m.kickoff_at).getTime() <= horizon
   );
+  const beyondHorizon = upcoming.length === 0 && upcomingAll.length > 0;
+  if (beyondHorizon) upcoming = upcomingAll.slice(0, 10);
   const hiddenUpcoming = upcomingAll.length - upcoming.length;
 
   // Agrupar tabla por competición
@@ -138,9 +141,14 @@ export default function Partidos() {
                   <FixtureRow m={m} clickable />
                 </Link>
               ))}
-              {upcoming.length === 0 && !loading && <Empty>No hay próximos partidos en los próximos 2 meses.</Empty>}
+              {upcoming.length === 0 && !loading && <Empty>No hay próximos partidos cargados.</Empty>}
             </div>
-            {hiddenUpcoming > 0 && (
+            {beyondHorizon && (
+              <p className="text-center text-xs text-white/45 mt-3">
+                No hay partidos en los próximos 2 meses · te mostramos los que siguen
+              </p>
+            )}
+            {!beyondHorizon && hiddenUpcoming > 0 && (
               <p className="text-center text-xs text-white/45 mt-3">
                 Mostrando los próximos 2 meses · {hiddenUpcoming} partido{hiddenUpcoming === 1 ? "" : "s"} más adelante
               </p>
