@@ -6,7 +6,10 @@ import { createClient } from "@/lib/supabase/client";
 import { Badge } from "@/components/Badge";
 import { BottomNav } from "@/components/BottomNav";
 import { PollCard } from "@/components/PollCard";
+import { NotificationBell } from "@/components/NotificationBell";
 import type { Team, Match, Article, Poll, ArticleCategory } from "@/lib/types";
+import { isLiveNow, streamingFor } from "@/lib/live";
+import { withRound } from "@/lib/format";
 
 // Cuántas notas mostramos de cada categoría para que ninguna tape a otra.
 const CATEGORY_LIMITS: Record<ArticleCategory, number> = {
@@ -39,6 +42,7 @@ export default function Feed() {
   const [name, setName] = useState("hincha");
   const [followed, setFollowed] = useState<Team[]>([]);
   const [match, setMatch] = useState<Match | null>(null);
+  const [live, setLive] = useState<Match[]>([]);
   const [byCategory, setByCategory] = useState<Record<ArticleCategory, Article[]>>({
     chile: [],
     argentina: [],
@@ -80,6 +84,16 @@ export default function Feed() {
         .limit(1);
       setMatch((m?.[0] as Match) || null);
 
+      // Partidos posiblemente en vivo (kickoff reciente o status live)
+      const since = new Date(Date.now() - 3 * 3600_000).toISOString();
+      const { data: lv } = await supabase
+        .from("matches")
+        .select("*, home_team:home_team_id(*), away_team:away_team_id(*), competition:competition_id(*)")
+        .neq("status", "final")
+        .gte("kickoff_at", since)
+        .order("kickoff_at", { ascending: true });
+      setLive(((lv as Match[]) || []).filter((x) => isLiveNow(x)));
+
       // Una consulta por categoría con su propio límite, así ninguna tapa a otra.
       const cats = Object.keys(CATEGORY_LIMITS) as ArticleCategory[];
       const results = await Promise.all(
@@ -118,26 +132,50 @@ export default function Feed() {
   }, [filter, byCategory]);
 
   return (
-    <main className="app-shell bg-cream text-ink min-h-screen">
+    <main className="app-shell bg-cream text-white min-h-screen">
       <div className="px-5 pt-12 pb-28">
         <div className="flex items-start justify-between">
           <div>
-            <p className="text-black/45 text-sm">Buenas, {name}</p>
+            <p className="text-white/55 text-sm">Buenas, {name}</p>
             <h1 className="display text-4xl">Hoy</h1>
           </div>
-          <div className="w-11 h-11 rounded-full bg-white grid place-items-center shadow">
-            🔔
-          </div>
+          <NotificationBell />
         </div>
+
+        {/* EN VIVO */}
+        {live.length > 0 && (
+          <div className="mt-5 space-y-2">
+            {live.map((m) => {
+              const st = streamingFor(m);
+              return (
+                <a key={m.id} href={`/partidos/${m.id}`}
+                   className="block bg-red-600 text-white rounded-2xl p-4 active:scale-[0.99] transition">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold flex items-center gap-1.5">
+                      <span className="inline-block w-1.5 h-1.5 rounded-full bg-card animate-pulse" /> EN VIVO AHORA
+                    </span>
+                    <span className="text-[11px] text-white/70">{m.competition?.short_name}</span>
+                  </div>
+                  <div className="mt-2 font-bold leading-tight">
+                    {m.home_team?.name} <span className="text-white/60">vs</span> {m.away_team?.name}
+                  </div>
+                  <div className="mt-1 text-[12px] text-white/85 font-semibold">
+                    {st.url ? "Ver en vivo ↗" : st.platform ? `Por ${st.platform} ›` : "Ver detalle ›"}
+                  </div>
+                </a>
+              );
+            })}
+          </div>
+        )}
 
         {/* followed chips */}
         {followed.length > 0 && (
           <div className="flex gap-4 mt-5 overflow-x-auto no-scrollbar">
             {followed.map((t) => (
-              <div key={t.id} className="flex flex-col items-center gap-1 shrink-0">
+              <Link key={t.id} href={`/equipos/${t.slug}`} className="flex flex-col items-center gap-1 shrink-0">
                 <Badge label={t.short_name || t.name.slice(0, 3)} color={t.color} size={52} />
-                <span className="text-xs text-black/55">{t.name.replace("Los ", "")}</span>
-              </div>
+                <span className="text-xs text-white/65">{t.name.replace("Los ", "")}</span>
+              </Link>
             ))}
           </div>
         )}
@@ -162,12 +200,12 @@ export default function Feed() {
                 key={f}
                 onClick={() => setFilter(f)}
                 className={`shrink-0 rounded-full px-4 py-1.5 text-sm font-semibold transition ${
-                  isActive ? "bg-brand text-white" : "bg-white text-black/55"
+                  isActive ? "bg-brand text-white" : "bg-card text-white/65"
                 }`}
               >
                 {label}
                 {count > 0 && (
-                  <span className={`ml-1.5 ${isActive ? "text-white/70" : "text-black/35"}`}>{count}</span>
+                  <span className={`ml-1.5 ${isActive ? "text-white/70" : "text-white/45"}`}>{count}</span>
                 )}
               </button>
             );
@@ -181,9 +219,9 @@ export default function Feed() {
           ))}
         </div>
 
-        {loading && <p className="text-center text-black/40 mt-10">Cargando tu feed…</p>}
+        {loading && <p className="text-center text-white/50 mt-10">Cargando tu feed…</p>}
         {!loading && visibleArticles.length === 0 && (
-          <div className="bg-white rounded-2xl p-5 mt-4 text-center text-black/55">
+          <div className="bg-card border border-white/5 rounded-2xl p-5 mt-4 text-center text-white/65">
             Todavía no hay noticias cargadas. El feed se actualiza
             automáticamente cuando la ingesta corre.
           </div>
@@ -197,28 +235,28 @@ export default function Feed() {
 function MatchResult({ match }: { match: Match }) {
   const h = match.home_team, a = match.away_team;
   return (
-    <div className="bg-white rounded-2xl mt-5 overflow-hidden">
+    <div className="bg-card border border-white/5 rounded-2xl mt-5 overflow-hidden">
       <div className="flex items-center justify-between px-4 pt-4">
-        <span className="text-xs tracking-[0.15em] text-black/45 font-semibold">
-          {match.competition?.short_name || "PARTIDO"} {match.round ? "· " + match.round : ""}
+        <span className="text-xs tracking-[0.15em] text-white/55 font-semibold">
+          {withRound(match.competition?.short_name || "PARTIDO", match.round)}
         </span>
-        <span className="text-[11px] bg-black/5 rounded px-2 py-0.5 font-semibold text-black/60">
+        <span className="text-[11px] bg-white/[0.06] rounded px-2 py-0.5 font-semibold text-white/70">
           {match.status === "final" ? "FINAL" : ""}
         </span>
       </div>
       <div className="flex items-center justify-between px-4 py-4">
-        <div className="flex items-center gap-2">
+        <Link href={h?.slug ? `/equipos/${h.slug}` : "#"} className="flex items-center gap-2">
           <Badge label={h?.short_name || "?"} color={h?.color} size={34} />
           <span className="font-bold">{h?.name}</span>
-        </div>
+        </Link>
         <span className="display text-3xl">{match.home_score} – {match.away_score}</span>
-        <div className="flex items-center gap-2">
+        <Link href={a?.slug ? `/equipos/${a.slug}` : "#"} className="flex items-center gap-2">
           <span className="font-bold">{a?.name}</span>
           <Badge label={a?.short_name || "?"} color={a?.color} size={34} />
-        </div>
+        </Link>
       </div>
-      <div className="flex items-center justify-between px-4 py-3 border-t border-black/5">
-        <span className="text-sm text-black/45">
+      <div className="flex items-center justify-between px-4 py-3 border-t border-white/10">
+        <span className="text-sm text-white/55">
           {[match.venue, match.city].filter(Boolean).join(" · ")}
         </span>
         {match.summary_url && (
@@ -231,7 +269,7 @@ function MatchResult({ match }: { match: Match }) {
 
 function ArticleCard({ a }: { a: Article }) {
   return (
-    <a href={a.url || "#"} target="_blank" rel="noopener noreferrer" className="block bg-white rounded-2xl overflow-hidden">
+    <a href={a.url || "#"} target="_blank" rel="noopener noreferrer" className="block bg-card border border-white/5 rounded-2xl overflow-hidden">
       <div className="flex">
         <div className="flex-1 p-4">
           <div className="flex items-center gap-2 mb-2">
@@ -240,13 +278,13 @@ function ArticleCard({ a }: { a: Article }) {
             </span>
             <span className="text-sm font-semibold">{a.author || a.source?.name}</span>
             {a.category && CATEGORY_META[a.category] && (
-              <span className="ml-auto text-[10px] font-semibold bg-black/5 text-black/55 rounded-full px-2 py-0.5">
+              <span className="ml-auto text-[10px] font-semibold bg-white/[0.06] text-white/65 rounded-full px-2 py-0.5">
                 {CATEGORY_META[a.category].short}
               </span>
             )}
           </div>
           <p className="font-bold leading-snug">{a.title}</p>
-          <p className="text-xs text-black/45 mt-2">
+          <p className="text-xs text-white/55 mt-2">
             {a.published_at ? timeAgo(a.published_at) : ""} · Leer ›
           </p>
         </div>

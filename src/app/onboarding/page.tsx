@@ -49,6 +49,27 @@ export default function Onboarding() {
       setTeams((t as Team[]) || []);
       setPlayers((p as Player[]) || []);
       setLeagues((c as Competition[]) || []);
+
+      // Precargar lo que el usuario ya sigue, para no borrarlo al editar.
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: f } = await supabase
+          .from("follows").select("team_id, player_id, competition_id").eq("user_id", user.id);
+        const fr = f || [];
+        setTeamSel(new Set(fr.map((r) => r.team_id).filter(Boolean) as string[]));
+        setPlayerSel(new Set(fr.map((r) => r.player_id).filter(Boolean) as string[]));
+        setLeagueSel(new Set(fr.map((r) => r.competition_id).filter(Boolean) as string[]));
+        const { data: prof } = await supabase
+          .from("profiles").select("personalize_feed, analytics_opt_in, sponsors_opt_in").eq("id", user.id).maybeSingle();
+        if (prof) setPrefs({ personalize: prof.personalize_feed, analytics: prof.analytics_opt_in, sponsors: prof.sponsors_opt_in });
+      } else {
+        try {
+          const local = JSON.parse(localStorage.getItem("tribuna_follows") || "{}");
+          if (local.teams) setTeamSel(new Set(local.teams));
+          if (local.players) setPlayerSel(new Set(local.players));
+          if (local.leagues) setLeagueSel(new Set(local.leagues));
+        } catch {}
+      }
     })();
   }, [supabase]);
 
@@ -95,7 +116,7 @@ export default function Onboarding() {
     localStorage.setItem("tribuna_prefs", JSON.stringify(prefs));
 
     const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
+    if (user && (teamIds.length + playerIds.length + leagueIds.length) > 0) {
       await supabase.from("follows").delete().eq("user_id", user.id);
       const rows = [
         ...teamIds.map((id) => ({ user_id: user.id, kind: "team", team_id: id })),
@@ -103,6 +124,15 @@ export default function Onboarding() {
         ...leagueIds.map((id) => ({ user_id: user.id, kind: "league", competition_id: id })),
       ];
       if (rows.length) await supabase.from("follows").insert(rows);
+      // Canjear referido (si vino por ?ref=) antes de marcar onboarded=true,
+      // para que el trigger premie al invitador.
+      try {
+        const ref = localStorage.getItem("tribuna_ref");
+        if (ref) {
+          await supabase.rpc("redeem_referral", { code: ref });
+          localStorage.removeItem("tribuna_ref");
+        }
+      } catch {}
       await supabase
         .from("profiles")
         .update({
@@ -117,24 +147,24 @@ export default function Onboarding() {
   }
 
   return (
-    <main className="app-shell bg-cream text-ink flex flex-col">
+    <main className="app-shell bg-cream text-white flex flex-col">
       <header className="px-5 pt-12 pb-2">
         <div className="flex items-center justify-between text-sm">
           <button
             onClick={() => (step > 1 ? setStep(step - 1) : router.push("/"))}
-            className="w-9 h-9 rounded-full bg-white grid place-items-center shadow"
+            className="w-9 h-9 rounded-full bg-card grid place-items-center shadow"
             aria-label="Atrás"
           >
             ‹
           </button>
-          <span className="tracking-[0.2em] text-black/45 text-xs font-semibold">
+          <span className="tracking-[0.2em] text-white/55 text-xs font-semibold">
             PASO {step} DE {STEPS}
           </span>
-          <button onClick={finish} className="text-black/45">
+          <button onClick={finish} className="text-white/55">
             Saltar
           </button>
         </div>
-        <div className="mt-4 h-1.5 rounded-full bg-black/10 overflow-hidden">
+        <div className="mt-4 h-1.5 rounded-full bg-white/10 overflow-hidden">
           <div
             className="h-full bg-brand transition-all"
             style={{ width: `${(step / STEPS) * 100}%` }}
@@ -222,9 +252,9 @@ export default function Onboarding() {
 
         {step === 5 && (
           <Step title="Tu privacidad" sub="Vos decidís qué compartís. Transparente desde el día uno.">
-            <div className="bg-white rounded-2xl p-4 mb-3">
+            <div className="bg-card border border-white/5 rounded-2xl p-4 mb-3">
               <p className="font-bold">Vos controlás tus datos</p>
-              <p className="text-sm text-black/55 mt-1">
+              <p className="text-sm text-white/65 mt-1">
                 Usamos tus intereses para curar tu feed. Elegí qué compartís —
                 podés cambiarlo cuando quieras.
               </p>
@@ -232,7 +262,7 @@ export default function Onboarding() {
             <Toggle label="Personalizar mi feed" sub="Usar mis intereses para curar el contenido." value={prefs.personalize} onChange={(v) => setPrefs({ ...prefs, personalize: v })} />
             <Toggle label="Analítica de uso" sub="Mejorar la app con datos agregados y anónimos." value={prefs.analytics} onChange={(v) => setPrefs({ ...prefs, analytics: v })} />
             <Toggle label="Sponsors y promociones" sub="Recibir activaciones de marcas del rugby." value={prefs.sponsors} onChange={(v) => setPrefs({ ...prefs, sponsors: v })} />
-            <p className="text-xs text-black/45 mt-4">
+            <p className="text-xs text-white/55 mt-4">
               Tu data es tuya y se recolecta con consentimiento (Ley 21.719).
             </p>
           </Step>
@@ -256,7 +286,7 @@ function Step({ title, sub, children }: { title: string; sub: string; children: 
   return (
     <div>
       <h2 className="display text-3xl">{title}</h2>
-      <p className="text-black/55 mt-1 mb-4">{sub}</p>
+      <p className="text-white/65 mt-1 mb-4">{sub}</p>
       {children}
     </div>
   );
@@ -265,17 +295,17 @@ function Step({ title, sub, children }: { title: string; sub: string; children: 
 function SearchBar({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder: string }) {
   return (
     <div className="relative mb-4">
-      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-black/35">🔍</span>
+      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/45">🔍</span>
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full bg-white rounded-2xl pl-11 pr-10 py-3 outline-none border-2 border-transparent focus:border-brand/40 transition"
+        className="w-full bg-card border border-white/5 rounded-2xl pl-11 pr-10 py-3 outline-none border-2 border-transparent focus:border-brand/40 transition"
       />
       {value && (
         <button
           onClick={() => onChange("")}
-          className="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-black/5 grid place-items-center text-black/45"
+          className="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-white/[0.06] grid place-items-center text-white/55"
           aria-label="Limpiar"
         >
           ×
@@ -287,7 +317,7 @@ function SearchBar({ value, onChange, placeholder }: { value: string; onChange: 
 
 function Empty() {
   return (
-    <p className="text-center text-sm text-black/40 py-6">
+    <p className="text-center text-sm text-white/50 py-6">
       Sin resultados. ¿Falta algo? Sugerilo abajo 👇
     </p>
   );
@@ -336,12 +366,12 @@ function SuggestBox({ kind, supabase }: { kind: "league" | "club" | "player"; su
       {!open ? (
         <button
           onClick={() => setOpen(true)}
-          className="w-full border-2 border-dashed border-black/15 rounded-2xl py-3 text-sm font-semibold text-black/55 hover:border-brand/40 transition"
+          className="w-full border-2 border-dashed border-white/15 rounded-2xl py-3 text-sm font-semibold text-white/65 hover:border-brand/40 transition"
         >
           + {cfg.cta}
         </button>
       ) : (
-        <div className="bg-white rounded-2xl p-4 space-y-3">
+        <div className="bg-card border border-white/5 rounded-2xl p-4 space-y-3">
           <p className="font-bold text-sm">{cfg.cta}</p>
           <input
             value={name}
@@ -360,7 +390,7 @@ function SuggestBox({ kind, supabase }: { kind: "league" | "club" | "player"; su
           <div className="flex gap-2">
             <button
               onClick={() => setOpen(false)}
-              className="flex-1 rounded-xl py-2.5 text-sm font-semibold bg-black/5 text-black/55"
+              className="flex-1 rounded-xl py-2.5 text-sm font-semibold bg-white/[0.06] text-white/65"
             >
               Cancelar
             </button>
@@ -382,11 +412,11 @@ function TeamCard({ team, selected, onClick }: { team: Team; selected: boolean; 
   return (
     <button
       onClick={onClick}
-      className={`bg-white rounded-2xl p-5 flex flex-col items-center gap-2 border-2 transition ${selected ? "border-brand" : "border-transparent"}`}
+      className={`bg-card border border-white/5 rounded-2xl p-5 flex flex-col items-center gap-2 border-2 transition ${selected ? "border-brand" : "border-transparent"}`}
     >
       <Badge label={team.short_name || team.name.slice(0, 3)} color={team.color} size={48} />
       <span className="font-bold">{team.name}</span>
-      <span className="text-xs text-black/45">{team.country}</span>
+      <span className="text-xs text-white/55">{team.country}</span>
     </button>
   );
 }
@@ -395,14 +425,14 @@ function RowCard({ label, sub, initials, color, selected, onClick }: { label: st
   return (
     <button
       onClick={onClick}
-      className={`w-full bg-white rounded-2xl p-3 flex items-center gap-3 border-2 transition ${selected ? "border-brand" : "border-transparent"}`}
+      className={`w-full bg-card border border-white/5 rounded-2xl p-3 flex items-center gap-3 border-2 transition ${selected ? "border-brand" : "border-transparent"}`}
     >
       <Badge label={initials.toUpperCase()} color={color} size={44} />
       <div className="text-left flex-1">
         <p className="font-bold leading-tight">{label}</p>
-        <p className="text-xs text-black/45">{sub}</p>
+        <p className="text-xs text-white/55">{sub}</p>
       </div>
-      <span className={`w-7 h-7 rounded-full grid place-items-center text-sm ${selected ? "bg-brand text-white" : "bg-black/5 text-black/40"}`}>
+      <span className={`w-7 h-7 rounded-full grid place-items-center text-sm ${selected ? "bg-brand text-white" : "bg-white/[0.06] text-white/50"}`}>
         {selected ? "✓" : "+"}
       </span>
     </button>
@@ -411,17 +441,17 @@ function RowCard({ label, sub, initials, color, selected, onClick }: { label: st
 
 function Toggle({ label, sub, value, onChange }: { label: string; sub: string; value: boolean; onChange: (v: boolean) => void }) {
   return (
-    <div className="bg-white rounded-2xl p-4 mb-3 flex items-center justify-between">
+    <div className="bg-card border border-white/5 rounded-2xl p-4 mb-3 flex items-center justify-between">
       <div className="pr-4">
         <p className="font-bold">{label}</p>
-        <p className="text-sm text-black/55">{sub}</p>
+        <p className="text-sm text-white/65">{sub}</p>
       </div>
       <button
         onClick={() => onChange(!value)}
-        className={`w-12 h-7 rounded-full transition relative shrink-0 ${value ? "bg-green-700" : "bg-black/20"}`}
+        className={`w-12 h-7 rounded-full transition relative shrink-0 ${value ? "bg-green-700" : "bg-white/20"}`}
         aria-pressed={value}
       >
-        <span className={`absolute top-1 w-5 h-5 bg-white rounded-full transition-all ${value ? "left-6" : "left-1"}`} />
+        <span className={`absolute top-1 w-5 h-5 bg-card rounded-full transition-all ${value ? "left-6" : "left-1"}`} />
       </button>
     </div>
   );
