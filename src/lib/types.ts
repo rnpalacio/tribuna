@@ -8,6 +8,16 @@ export type Team = {
   competition_id: string | null;
   color: string | null;
   badge_url: string | null;
+  nickname?: string | null;
+  description?: string | null;
+  website_url?: string | null;
+  instagram_url?: string | null;
+  x_url?: string | null;
+  youtube_url?: string | null;
+  founded_year?: number | null;
+  home_venue?: string | null;
+  home_city?: string | null;
+  world_ranking?: number | null;
 };
 
 export type Player = {
@@ -31,6 +41,8 @@ export type Competition = {
   color?: string | null;
   sort?: number | null;
   followable?: boolean | null;
+  streaming_url?: string | null;
+  streaming_platform?: string | null;
 };
 
 export type Match = {
@@ -48,6 +60,8 @@ export type Match = {
   summary_url: string | null;
   tickets_url?: string | null;
   ticket_vendor?: string | null;
+  streaming_url?: string | null;
+  streaming_platform?: string | null;
   home_team?: Team | null;
   away_team?: Team | null;
   competition?: Competition | null;
@@ -116,4 +130,7 @@ export type Profile = {
   sponsors_opt_in: boolean;
   onboarded: boolean;
   predictor_points: number;
+  referral_code?: string | null;
+  referred_by?: string | null;
+  is_admin?: boolean | null;
 };
