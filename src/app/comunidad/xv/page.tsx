@@ -92,28 +92,28 @@ export default function XVBuilder() {
   }
 
   return (
-    <main className="app-shell bg-cream text-ink min-h-screen">
+    <main className="app-shell bg-cream text-white min-h-screen">
       <div className="px-5 pt-12 pb-40">
         <Link href="/comunidad" className="text-brand font-semibold text-sm">‹ Comunidad</Link>
         <h1 className="display text-3xl mt-3">Armá tu XV</h1>
-        <p className="text-black/55 text-sm mt-1 mb-4">
+        <p className="text-white/65 text-sm mt-1 mb-4">
           Elegí 15 jugadores y adiviná quiénes van a sumar más. Solo cuentan los
           partidos que se jueguen <b>después</b> de que los elijas (gana 4 · empata 2 · bonus).
         </p>
 
         {!authed && (
-          <div className="bg-white rounded-2xl p-4 text-sm text-black/60 mb-4">
+          <div className="bg-card border border-white/5 rounded-2xl p-4 text-sm text-white/70 mb-4">
             Podés armarlo igual, pero <Link href="/login" className="text-brand font-semibold">iniciá sesión</Link> para guardarlo y entrar al ranking.
           </div>
         )}
 
         <div className="relative mb-4">
-          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-black/35">🔍</span>
+          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/45">🔍</span>
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Buscar jugador, club o posición…"
-            className="w-full bg-white rounded-2xl pl-11 pr-4 py-3 outline-none border-2 border-transparent focus:border-brand/40 transition"
+            className="w-full bg-card border border-white/5 rounded-2xl pl-11 pr-4 py-3 outline-none border-2 border-transparent focus:border-brand/40 transition"
           />
         </div>
 
@@ -124,29 +124,29 @@ export default function XVBuilder() {
               <button
                 key={r.id}
                 onClick={() => toggle(r.id)}
-                className={`w-full bg-white rounded-2xl p-3 flex items-center gap-3 border-2 transition ${on ? "border-brand" : "border-transparent"}`}
+                className={`w-full bg-card border border-white/5 rounded-2xl p-3 flex items-center gap-3 border-2 transition ${on ? "border-brand" : "border-transparent"}`}
               >
                 <Badge label={r.name.split(" ").map((w) => w[0]).slice(0, 2).join("")} color={r.team?.color} size={44} />
                 <div className="text-left flex-1">
                   <p className="font-bold leading-tight">{r.name}</p>
-                  <p className="text-xs text-black/45">
+                  <p className="text-xs text-white/55">
                     {[r.position, r.team?.name].filter(Boolean).join(" · ")}
                   </p>
                 </div>
-                <span className={`w-7 h-7 rounded-full grid place-items-center text-sm ${on ? "bg-brand text-white" : "bg-black/5 text-black/40"}`}>
+                <span className={`w-7 h-7 rounded-full grid place-items-center text-sm ${on ? "bg-brand text-white" : "bg-white/[0.06] text-white/50"}`}>
                   {on ? "✓" : "+"}
                 </span>
               </button>
             );
           })}
-          {list.length === 0 && <p className="text-center text-black/40 py-6">Sin resultados.</p>}
-          {loading && <p className="text-center text-black/40 py-6">Cargando jugadores…</p>}
+          {list.length === 0 && <p className="text-center text-white/50 py-6">Sin resultados.</p>}
+          {loading && <p className="text-center text-white/50 py-6">Cargando jugadores…</p>}
         </div>
       </div>
 
       {/* Barra inferior con resumen + guardar */}
       <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] p-4 bg-gradient-to-t from-cream via-cream to-transparent">
-        {msg && <p className="text-center text-xs text-black/60 mb-2">{msg}</p>}
+        {msg && <p className="text-center text-xs text-white/70 mb-2">{msg}</p>}
         <div className="bg-ink text-white rounded-2xl p-3 flex items-center justify-between">
           <div className="pl-2">
             <p className="text-xs text-white/60">Tu XV</p>

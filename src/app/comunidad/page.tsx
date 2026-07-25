@@ -32,7 +32,7 @@ export default async function Comunidad() {
   const xvRows = (xv as XVRow[]) || [];
 
   return (
-    <main className="app-shell bg-cream text-ink min-h-screen">
+    <main className="app-shell bg-cream text-white min-h-screen">
       <div className="px-5 pt-12 pb-28">
         <h1 className="display text-4xl mb-4">Comunidad</h1>
 
@@ -52,15 +52,15 @@ export default async function Comunidad() {
         </div>
 
         {/* Ranking XV — siempre visible */}
-        <h2 className="text-xs tracking-[0.15em] text-black/45 font-semibold mb-3">RANKING · ARMÁ TU XV</h2>
-        <div className="bg-white rounded-2xl overflow-hidden mb-6">
+        <h2 className="text-xs tracking-[0.15em] text-white/55 font-semibold mb-3">RANKING · ARMÁ TU XV</h2>
+        <div className="bg-card border border-white/5 rounded-2xl overflow-hidden mb-6">
           {xvRows.length === 0 && (
-            <div className="p-5 text-center text-black/55">
+            <div className="p-5 text-center text-white/65">
               Todavía nadie armó su XV. <Link href="/comunidad/xv" className="text-brand font-semibold">Sé el primero ›</Link>
             </div>
           )}
           {xvRows.map((r, i) => (
-            <div key={r.user_id} className={`flex items-center gap-3 px-4 py-3 ${i % 2 ? "bg-black/[0.02]" : ""}`}>
+            <div key={r.user_id} className={`flex items-center gap-3 px-4 py-3 ${i % 2 ? "bg-white/[0.04]" : ""}`}>
               <span className="font-bold text-brand w-5">{i + 1}</span>
               <span className="flex-1 font-semibold">{r.display_name || "Hincha"}</span>
               <span className="font-bold">{r.xv_points.toLocaleString("es-CL")} pts</span>
@@ -70,20 +70,20 @@ export default async function Comunidad() {
 
         {poll && (
           <>
-            <h2 className="text-xs tracking-[0.15em] text-black/45 font-semibold mb-3">ENCUESTA DE LA SEMANA</h2>
+            <h2 className="text-xs tracking-[0.15em] text-white/55 font-semibold mb-3">ENCUESTA DE LA SEMANA</h2>
             <div className="mb-6"><PollCard poll={poll} dark={false} /></div>
           </>
         )}
 
-        <h2 className="text-xs tracking-[0.15em] text-black/45 font-semibold mb-3">RANKING DE PREDICTORES</h2>
-        <div className="bg-white rounded-2xl overflow-hidden">
+        <h2 className="text-xs tracking-[0.15em] text-white/55 font-semibold mb-3">RANKING DE PREDICTORES</h2>
+        <div className="bg-card border border-white/5 rounded-2xl overflow-hidden">
           {((ranking as PredRow[]) || []).length === 0 && (
-            <div className="p-5 text-center text-black/55">
+            <div className="p-5 text-center text-white/65">
               Todavía no hay predictores. ¡Sé el primero en votar las predicciones!
             </div>
           )}
           {((ranking as PredRow[]) || []).map((r, i) => (
-            <div key={i} className={`flex items-center gap-3 px-4 py-3 ${i % 2 ? "bg-black/[0.02]" : ""}`}>
+            <div key={i} className={`flex items-center gap-3 px-4 py-3 ${i % 2 ? "bg-white/[0.04]" : ""}`}>
               <span className="font-bold text-brand w-5">{i + 1}</span>
               <span className="flex-1 font-semibold">{r.display_name || "Hincha"}</span>
               <span className="font-bold">{r.predictor_points.toLocaleString("es-CL")} pts</span>
