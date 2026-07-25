@@ -79,21 +79,25 @@ export default async function MatchDetail({ params }: { params: { id: string } }
           {withRound(m.competition?.name || "Partido", m.round)}
         </p>
 
-        {/* Marcador / enfrentamiento */}
-        <div className="bg-card border border-white/5 rounded-2xl p-6 mt-3">
-          <div className="flex items-center justify-between">
-            <TeamCol team={m.home_team} />
-            <div className="text-center px-3">
-              {isFinal ? (
-                <div className="display text-4xl">{m.home_score} – {m.away_score}</div>
-              ) : (
-                <div className="display text-2xl text-brand">{hora || "VS"}</div>
-              )}
-              <div className={`text-[11px] mt-1 font-semibold ${live ? "text-red-600" : "text-white/50"}`}>
-                {isFinal ? "FINAL" : live ? "● EN VIVO" : "POR JUGARSE"}
+        {/* Marcador / enfrentamiento — hero con imagen */}
+        <div className="relative overflow-hidden rounded-3xl border border-white/10 mt-3">
+          <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: "url(/portada.jpg)" }} />
+          <div className="absolute inset-0 bg-gradient-to-b from-ink/70 via-ink/45 to-ink/90" />
+          <div className="relative p-6">
+            <div className="flex items-center justify-between">
+              <TeamCol team={m.home_team} />
+              <div className="text-center px-3">
+                {isFinal ? (
+                  <div className="display text-4xl">{m.home_score} – {m.away_score}</div>
+                ) : (
+                  <div className="display text-2xl text-brand">{hora || "VS"}</div>
+                )}
+                <div className={`text-[11px] mt-1 font-semibold ${live ? "text-red-500" : "text-white/60"}`}>
+                  {isFinal ? "FINAL" : live ? "● EN VIVO" : "POR JUGARSE"}
+                </div>
               </div>
+              <TeamCol team={m.away_team} />
             </div>
-            <TeamCol team={m.away_team} />
           </div>
         </div>
 

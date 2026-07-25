@@ -147,7 +147,9 @@ export default function Onboarding() {
   }
 
   return (
-    <main className="app-shell bg-cream text-white flex flex-col">
+    <main className="app-shell bg-ink text-white flex flex-col relative isolate overflow-hidden">
+      <div className="pointer-events-none absolute inset-0 -z-10 bg-cover bg-center opacity-40" style={{ backgroundImage: "url(/portada.jpg)" }} />
+      <div className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-b from-ink/40 via-ink/70 to-ink" />
       <header className="px-5 pt-12 pb-2">
         <div className="flex items-center justify-between text-sm">
           <button

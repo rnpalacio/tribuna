@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Badge } from "@/components/Badge";
 import { BottomNav } from "@/components/BottomNav";
 import { NotificationBell } from "@/components/NotificationBell";
+import { NextMatchHero } from "@/components/NextMatchHero";
 import type { Team, Match, Article, ArticleCategory } from "@/lib/types";
 import { isLiveNow, streamingFor } from "@/lib/live";
 import { withRound } from "@/lib/format";
@@ -131,6 +132,9 @@ export default function Feed() {
           </div>
           <NotificationBell />
         </div>
+
+        {/* Próximo partido — hero con imagen */}
+        <NextMatchHero />
 
         {/* EN VIVO */}
         {live.length > 0 && (
