@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import type { Match } from "@/lib/types";
 import { withRound } from "@/lib/format";
 
-const BG = "/portada.jpg"; // reemplazable por /bg-partido.jpg
+const BG = "/bg-estadio.jpg";
 
 export function NextMatchHero() {
   const supabase = useMemo(() => createClient(), []);

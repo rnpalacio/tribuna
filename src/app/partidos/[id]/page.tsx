@@ -81,7 +81,7 @@ export default async function MatchDetail({ params }: { params: { id: string } }
 
         {/* Marcador / enfrentamiento — hero con imagen */}
         <div className="relative overflow-hidden rounded-3xl border border-white/10 mt-3">
-          <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: "url(/portada.jpg)" }} />
+          <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: "url(/bg-tunel.jpg)" }} />
           <div className="absolute inset-0 bg-gradient-to-b from-ink/70 via-ink/45 to-ink/90" />
           <div className="relative p-6">
             <div className="flex items-center justify-between">

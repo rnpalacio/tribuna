@@ -33,8 +33,15 @@ export default async function Comunidad() {
 
   return (
     <main className="app-shell bg-cream text-white min-h-screen">
-      <div className="px-5 pt-12 pb-28">
-        <h1 className="display text-4xl mb-4">Comunidad</h1>
+      <div className="relative isolate overflow-hidden">
+        <div className="pointer-events-none absolute inset-0 -z-10 bg-cover bg-center" style={{ backgroundImage: "url(/bg-bandera.jpg)" }} />
+        <div className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-b from-ink/30 via-ink/60 to-cream" />
+        <div className="px-5 pt-12 pb-6">
+          <h1 className="display text-4xl">Comunidad</h1>
+          <p className="text-sm text-white/65 mt-1">Jugá, opiná y sumá puntos con la hinchada.</p>
+        </div>
+      </div>
+      <div className="px-5 pb-28">
 
         <div className="bg-ink text-white rounded-2xl p-5 mb-5">
           <p className="text-brand text-xs font-bold tracking-[0.15em]">JUEGO</p>
