@@ -6,12 +6,13 @@ const config: Config = {
     extend: {
       colors: {
         brand: {
-          DEFAULT: "#EC5A2A",
-          600: "#D94E22",
+          DEFAULT: "#2563EB",
+          600: "#1D4ED8",
         },
-        ink: "#0E1320",
-        cream: "#F4EFE6",
-        card: "#FFFFFF",
+        ink: "#070A12",
+        cream: "#0A0E16",
+        card: "#121826",
+        surface2: "#1B2335",
       },
       fontFamily: {
         sans: ["var(--font-sans)", "system-ui", "sans-serif"],
