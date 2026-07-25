@@ -67,21 +67,21 @@ export function MatchPrediction(props: Props) {
   if (loading) return null;
 
   return (
-    <div className="bg-white rounded-2xl p-4 mt-4">
+    <div className="bg-card border border-white/5 rounded-2xl p-4 mt-4">
       <div className="flex items-center justify-between mb-3">
         <p className="font-bold">Tu predicción</p>
-        <span className="text-[11px] text-black/45 font-semibold">+3 GANADOR · +5 EXACTO</span>
+        <span className="text-[11px] text-white/55 font-semibold">+3 GANADOR · +5 EXACTO</span>
       </div>
 
       {!authed ? (
-        <p className="text-sm text-black/55">
+        <p className="text-sm text-white/65">
           <Link href="/login" className="text-brand font-semibold">Iniciá sesión</Link> para predecir el marcador y entrar al ranking de predictores.
         </p>
       ) : open ? (
         <>
           <div className="flex items-center justify-center gap-3">
             <PredInput label={homeShort} value={ph} onChange={setPh} />
-            <span className="text-black/30 font-bold">–</span>
+            <span className="text-white/40 font-bold">–</span>
             <PredInput label={awayShort} value={pa} onChange={setPa} />
           </div>
           <button
@@ -91,27 +91,27 @@ export function MatchPrediction(props: Props) {
           >
             {saving ? "Guardando…" : existing ? "Actualizar predicción" : "Guardar predicción"}
           </button>
-          {msg && <p className="text-xs text-black/55 mt-2 text-center">{msg}</p>}
+          {msg && <p className="text-xs text-white/65 mt-2 text-center">{msg}</p>}
         </>
       ) : (
         // Cerrada
         <div className="text-sm">
           {existing ? (
             <div className="flex items-center justify-between">
-              <span className="text-black/55">
+              <span className="text-white/65">
                 Predijiste <b>{homeName} {existing.pred_home}–{existing.pred_away} {awayName}</b>
               </span>
               {existing.scored && (
-                <span className={`font-bold ${existing.points > 0 ? "text-green-700" : "text-black/40"}`}>
+                <span className={`font-bold ${existing.points > 0 ? "text-green-700" : "text-white/50"}`}>
                   +{existing.points} pts
                 </span>
               )}
             </div>
           ) : (
-            <p className="text-black/45">Predicciones cerradas para este partido.</p>
+            <p className="text-white/55">Predicciones cerradas para este partido.</p>
           )}
           {existing && !existing.scored && status === "final" && homeScore !== null && (
-            <p className="text-xs text-black/45 mt-1">Resultado: {homeScore}–{awayScore}. Puntos en cálculo.</p>
+            <p className="text-xs text-white/55 mt-1">Resultado: {homeScore}–{awayScore}. Puntos en cálculo.</p>
           )}
         </div>
       )}
@@ -122,7 +122,7 @@ export function MatchPrediction(props: Props) {
 function PredInput({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
   return (
     <div className="flex flex-col items-center gap-1">
-      <span className="text-xs font-semibold text-black/55">{label}</span>
+      <span className="text-xs font-semibold text-white/65">{label}</span>
       <input
         type="number"
         inputMode="numeric"

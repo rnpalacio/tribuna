@@ -34,7 +34,7 @@ export function PollCard({ poll, dark = true }: { poll: Poll; dark?: boolean }) 
   const sorted = [...options].sort((a, b) => a.sort - b.sort);
 
   return (
-    <div className={`${dark ? "bg-ink text-white" : "bg-white text-ink"} rounded-2xl p-4`}>
+    <div className={`${dark ? "bg-ink text-white" : "bg-card text-white"} rounded-2xl p-4`}>
       <div className="flex items-center justify-between mb-1">
         <span className="text-brand text-xs font-bold tracking-[0.15em]">
           {poll.kind === "prediction" ? "PREDICCIÓN · COMUNIDAD" : "ENCUESTA"}
@@ -49,7 +49,7 @@ export function PollCard({ poll, dark = true }: { poll: Poll; dark?: boolean }) 
             <button
               key={o.id}
               onClick={() => vote(o.id)}
-              className={`relative overflow-hidden text-left rounded-xl px-4 py-3 transition ${dark ? "bg-white/10" : "bg-black/5"} ${isMine ? "ring-2 ring-brand" : ""}`}
+              className={`relative overflow-hidden text-left rounded-xl px-4 py-3 transition ${dark ? "bg-white/10" : "bg-white/[0.06]"} ${isMine ? "ring-2 ring-brand" : ""}`}
             >
               {showResults && (
                 <span className="absolute inset-y-0 left-0 bg-brand/30" style={{ width: `${pct}%` }} />
@@ -63,7 +63,7 @@ export function PollCard({ poll, dark = true }: { poll: Poll; dark?: boolean }) 
         })}
       </div>
       <div className="flex items-center justify-between mt-3 gap-3">
-        <p className={`text-xs ${dark ? "text-white/55" : "text-black/45"}`}>
+        <p className={`text-xs ${dark ? "text-white/55" : "text-white/55"}`}>
           {msg || (showResults
             ? `${total.toLocaleString("es-CL")} votos`
             : `Votá y sumá puntos · ${total.toLocaleString("es-CL")} hinchas`)}
